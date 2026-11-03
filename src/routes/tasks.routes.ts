@@ -1,22 +1,35 @@
 import { Router } from "express";
 import {
-  createTask,
-  deleteTask,
-  getTaskById,
-  getTasks,
-  updateTask,
+  createCreateTaskController,
+  createDeleteTaskController,
+  createGetTaskByIdController,
+  createGetTasksController,
+  createUpdateTaskController,
 } from "../controllers/tasks.controller";
+import type { Pool } from "pg";
 
-const router = Router();
+export function createTasksRouter(db: Pool) {
+  const router = Router();
 
-router.get("/tasks", getTasks);
+  const getTasks = createGetTasksController(db);
 
-router.get("/tasks/:id", getTaskById);
+  const getTasksById = createGetTaskByIdController(db);
 
-router.post("/tasks", createTask);
+  const createTask = createCreateTaskController(db);
 
-router.patch("/tasks/:id", updateTask);
+  const updateTask = createUpdateTaskController(db);
 
-router.delete("/tasks/:id", deleteTask);
+  const deleteTask = createDeleteTaskController(db);
 
-export default router;
+  router.get("/tasks", getTasks);
+
+  router.get("/tasks/:id", getTasksById);
+
+  router.post("/tasks", createTask);
+
+  router.patch("/tasks/:id", updateTask);
+
+  router.delete("/tasks/:id", deleteTask);
+
+  return router;
+}

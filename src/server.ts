@@ -1,6 +1,8 @@
 import { pool } from "./database/connections";
-import app from "./app";
+import { createApp } from "./app";
 const PORT = 3000;
+
+const app = createApp(pool);
 
 pool
   .query("SELECT NOW ()")

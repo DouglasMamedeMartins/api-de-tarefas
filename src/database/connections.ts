@@ -11,3 +11,11 @@ export const pool = new Pool({
   user: getEnv("DB_USER"),
   password: getEnv("DB_PASSWORD"),
 });
+
+export const testPool = new Pool({
+  host: getEnv("DB_HOST"),
+  port: getEnvNumber("DB_PORT"),
+  database: getEnv("DB_TEST_NAME"),
+  user: getEnv("DB_USER"),
+  password: getEnv("DB_PASSWORD"),
+});

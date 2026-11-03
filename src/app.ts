@@ -1,15 +1,18 @@
 import express from "express";
-import tasksRouter from "./routes/tasks.routes";
+import { createTasksRouter } from "./routes/tasks.routes";
+import type { Pool } from "pg";
 
-const app = express();
-app.use(express.json());
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    message: "API funcionando!",
+export function createApp(db: Pool) {
+  const app = express();
+  app.use(express.json());
+  app.get("/health", (req, res) => {
+    res.status(200).json({
+      status: "ok",
+      message: "API funcionando!",
+    });
   });
-});
 
-app.use("/api", tasksRouter);
+  app.use("/api", createTasksRouter(db));
 
-export default app;
+  return app;
+}
