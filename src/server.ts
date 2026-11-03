@@ -1,22 +1,6 @@
-import express from "express";
-import tasksRouter from "./routes/tasks.routes";
 import { pool } from "./database/connections";
-const app = express();
-app.use(express.json());
+import app from "./app";
 const PORT = 3000;
-
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    message: "API funcionando!",
-  });
-});
-
-app.use("/api", tasksRouter);
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
 
 pool
   .query("SELECT NOW ()")
@@ -27,3 +11,6 @@ pool
   .catch((error) => {
     console.log("Erro ao conectar com PostgreSQL", error);
   });
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
