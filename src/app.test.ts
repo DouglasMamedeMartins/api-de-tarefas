@@ -54,5 +54,37 @@ describe("Testes da API de tarefas", () => {
     expect(response.body.title).toBe(task.title);
   });
 
-  it("(PATCH /api/task/:id)", async () => {});
+  it("(PATCH /api/task/:id)", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: "PHP",
+      completed: true,
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(200);
+    expect(responseUpdate.body.title).toBe(taskUpdate.title);
+    expect(responseUpdate.body.completed).toBe(true);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(taskUpdate.title);
+    expect(getResponseUpdate.body[0].completed).toBe(taskUpdate.completed);
+  });
 });
