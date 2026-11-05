@@ -87,4 +87,24 @@ describe("Testes da API de tarefas", () => {
     expect(getResponseUpdate.body[0].title).toBe(taskUpdate.title);
     expect(getResponseUpdate.body[0].completed).toBe(taskUpdate.completed);
   });
+
+  it("(DELETE  /api/tasks/:id)", async () => {
+    const task = {
+      title: "Tarefa comum",
+    };
+
+    const responseCreate = await request(app).post("/api/tasks").send(task);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${responseCreate.body.id}`,
+    );
+
+    const responseDelete = await request(app).delete(
+      `/api/tasks/${idTask.body.id}`,
+    );
+    expect(responseDelete.status).toBe(200);
+
+    const responseGet = await request(app).get(`/api/tasks/${idTask.body.id}`);
+    expect(responseGet.status).toBe(404);
+  });
 });

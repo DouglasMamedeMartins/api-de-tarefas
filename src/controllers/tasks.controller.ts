@@ -99,6 +99,6 @@ export function createDeleteTaskController(db: Pool) {
       });
     }
 
-    return res.status(204).send();
+    return res.status(200).send();
   };
 }
