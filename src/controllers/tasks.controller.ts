@@ -79,7 +79,7 @@ export function createUpdateTaskController(db: Pool) {
     if ("completed" in req.body) {
       if (typeof req.body.completed !== "boolean") {
         return res.status(400).json({
-          message: "message deve ser true ou false",
+          message: "completed deve ser true ou false",
         });
       }
     }

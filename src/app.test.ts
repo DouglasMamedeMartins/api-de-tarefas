@@ -10,20 +10,20 @@ describe("Testes da API de tarefas", () => {
     await testPool.query("DELETE FROM tasks;");
   });
 
-  it("(GET /health) deve retornar 200", async () => {
+  it("(GET) /health deve retornar 200", async () => {
     const response = await request(app).get("/health");
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
     expect(response.body.message).toBe("API funcionando!");
   });
 
-  it("(GET /api/tasks/:id) deve retornar 404 quando uma tarefa não for encontrada", async () => {
+  it("(GET) /api/tasks/:id deve retornar 404 quando uma tarefa não for encontrada", async () => {
     const response = await request(app).get("/api/tasks/999999");
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Tarefa não encontrada");
   });
 
-  it("(GET /api/tasks) deve retornar 200", async () => {
+  it("(GET) /api/tasks deve retornar 200", async () => {
     const task1 = {
       title: "Express",
     };
@@ -43,18 +43,21 @@ describe("Testes da API de tarefas", () => {
     expect(getResponse.body[1].title).toBe(task2.title);
   });
 
-  it("(POST /api/tasks) deve retornar 201", async () => {
+  it("(POST) /api/tasks deve retornar 201", async () => {
     const task = {
       title: "Estudar Node.js",
     };
     const response = await request(app).post("/api/tasks").send(task);
 
     expect(response.status).toBe(201);
+    expect(response.body.id).toEqual(expect.any(Number));
+    expect(Number.isInteger(response.body.id)).toBe(true);
+    expect(response.body.id).toBeGreaterThan(0);
     expect(response.body.completed).toBe(false);
     expect(response.body.title).toBe(task.title);
   });
 
-  it("(PATCH /api/task/:id) deve retornar 200", async () => {
+  it("(PATCH) /api/task/:id deve retornar 200", async () => {
     const task = {
       title: "Javascript",
     };
@@ -88,7 +91,69 @@ describe("Testes da API de tarefas", () => {
     expect(getResponseUpdate.body[0].completed).toBe(taskUpdate.completed);
   });
 
-  it("(DELETE  /api/tasks/:id) deve retornar 200", async () => {
+  it("(PATCH) /api/task/:id deve retornar 200 e atualizar somente completed", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      completed: true,
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(200);
+    expect(responseUpdate.body.completed).toBe(true);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].completed).toBe(taskUpdate.completed);
+  });
+
+  it("(PATCH) /api/task/:id deve retornar 200 e atualizar somente title", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: "PHP",
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(200);
+    expect(responseUpdate.body.title).toBe(taskUpdate.title);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(taskUpdate.title);
+  });
+
+  it("(DELETE)  /api/tasks/:id deve retornar 200", async () => {
     const task = {
       title: "Tarefa comum",
     };
@@ -108,7 +173,7 @@ describe("Testes da API de tarefas", () => {
     expect(responseGet.status).toBe(404);
   });
 
-  it("(POST /api/tasks) deve retornar 400 caso título seja vazio", async () => {
+  it("(POST) /api/tasks deve retornar 400 caso título seja vazio", async () => {
     const task = {
       title: "",
     };
@@ -116,7 +181,7 @@ describe("Testes da API de tarefas", () => {
     expect(response.status).toBe(400);
   });
 
-  it("(POST /api/tasks) deve retornar 400 caso título seja inválido", async () => {
+  it("(POST) /api/tasks deve retornar 400 caso título seja inválido", async () => {
     const task = {
       title: 123,
     };
@@ -124,7 +189,7 @@ describe("Testes da API de tarefas", () => {
     expect(response.status).toBe(400);
   });
 
-  it("(POST /api/tasks) deve retornar 400 caso título tenha mais que 200 caracteres", async () => {
+  it("(POST /api/tasks deve retornar 400 caso título tenha mais que 200 caracteres", async () => {
     const task = {
       title: "A".repeat(201),
     };
@@ -224,6 +289,41 @@ describe("Testes da API de tarefas", () => {
     const getResponseUpdate = await request(app).get("/api/tasks");
 
     expect(getResponseUpdate.body[0].title).toBe(task.title);
+  });
+
+  it("(PATCH) /api/tasks deve retornar 400 caso completed seja inválido", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: "A".repeat(200),
+      completed: "true",
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(400);
+    expect(responseUpdate.body.message).toBe(
+      "completed deve ser true ou false",
+    );
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(task.title);
+    expect(getResponseUpdate.body[0].completed).toBe(false);
   });
 
   it("(DELETE) /api/tasks deve retornar 404 caso ID seja inexistente", async () => {
