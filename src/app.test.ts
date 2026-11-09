@@ -134,4 +134,95 @@ describe("Testes da API de tarefas", () => {
     const getResponse = await request(app).get("/api/tasks");
     expect(getResponse.body).toHaveLength(0);
   });
+
+  it("(PATCH) /api/tasks deve retornar 400 caso título seja vazio", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: "",
+      completed: true,
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(400);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(task.title);
+  });
+  it("(PATCH) /api/tasks deve retornar 400 caso título seja inválido", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: 123,
+      completed: true,
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(400);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(task.title);
+  });
+  it("(PATCH) /api/tasks deve retornar 400 caso título tenha mais que 200 caracteres", async () => {
+    const task = {
+      title: "Javascript",
+    };
+    await request(app).post("/api/tasks").send(task);
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body[0].title).toBe(task.title);
+
+    const idTask = await request(app).get(
+      `/api/tasks/${getResponse.body[0].id}`,
+    );
+
+    const taskUpdate = {
+      title: "A".repeat(201),
+      completed: true,
+    };
+
+    expect(getResponse.body[0].id).toBe(idTask.body.id);
+
+    const responseUpdate = await request(app)
+      .patch(`/api/tasks/${idTask.body.id}`)
+      .send(taskUpdate);
+
+    expect(responseUpdate.status).toBe(400);
+
+    const getResponseUpdate = await request(app).get("/api/tasks");
+
+    expect(getResponseUpdate.body[0].title).toBe(task.title);
+  });
 });

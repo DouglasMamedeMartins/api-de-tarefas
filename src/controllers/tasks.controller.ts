@@ -68,6 +68,12 @@ export function createUpdateTaskController(db: Pool) {
           message: "title deve ser uma string ou não pode estar vazio",
         });
       }
+
+      if (req.body.title.length > 200) {
+        return res.status(400).json({
+          message: "Limite de 200 caracteres atingido",
+        });
+      }
     }
 
     if ("completed" in req.body) {
