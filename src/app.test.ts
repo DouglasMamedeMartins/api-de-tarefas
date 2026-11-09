@@ -225,4 +225,27 @@ describe("Testes da API de tarefas", () => {
 
     expect(getResponseUpdate.body[0].title).toBe(task.title);
   });
+
+  it("(DELETE) /api/tasks deve retornar 404 caso ID seja inexistente", async () => {
+    const task = {
+      title: "Tarefa comum",
+    };
+
+    await request(app).post("/api/tasks").send(task);
+
+    const responseDelete = await request(app).delete(`/api/tasks/999999`);
+    expect(responseDelete.status).toBe(404);
+    expect(responseDelete.body.message).toBe("Tarefa não encontrada");
+  });
+  it("(DELETE) /api/tasks deve retornar 404 caso ID seja inválido", async () => {
+    const task = {
+      title: "Tarefa comum",
+    };
+
+    await request(app).post("/api/tasks").send(task);
+
+    const responseDelete = await request(app).delete(`/api/tasks/abc`);
+    expect(responseDelete.status).toBe(400);
+    expect(responseDelete.body.message).toBe("ID inválido");
+  });
 });
