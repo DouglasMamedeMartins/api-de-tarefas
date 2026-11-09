@@ -42,6 +42,12 @@ export function createCreateTaskController(db: Pool) {
       });
     }
 
+    if (req.body.title.length > 200) {
+      return res.status(400).json({
+        message: "Limite de 200 caracteres atingido",
+      });
+    }
+
     return res.status(201).json(await createTaskService(db, req.body.title));
   };
 }

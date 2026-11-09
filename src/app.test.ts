@@ -54,7 +54,7 @@ describe("Testes da API de tarefas", () => {
     expect(response.body.title).toBe(task.title);
   });
 
-  it("(PATCH /api/task/:id)", async () => {
+  it("(PATCH /api/task/:id) deve retornar 200", async () => {
     const task = {
       title: "Javascript",
     };
@@ -88,7 +88,7 @@ describe("Testes da API de tarefas", () => {
     expect(getResponseUpdate.body[0].completed).toBe(taskUpdate.completed);
   });
 
-  it("(DELETE  /api/tasks/:id)", async () => {
+  it("(DELETE  /api/tasks/:id) deve retornar 200", async () => {
     const task = {
       title: "Tarefa comum",
     };
@@ -106,5 +106,32 @@ describe("Testes da API de tarefas", () => {
 
     const responseGet = await request(app).get(`/api/tasks/${idTask.body.id}`);
     expect(responseGet.status).toBe(404);
+  });
+
+  it("(POST /api/tasks) deve retornar 400 caso título seja vazio", async () => {
+    const task = {
+      title: "",
+    };
+    const response = await request(app).post("/api/tasks").send(task);
+    expect(response.status).toBe(400);
+  });
+
+  it("(POST /api/tasks) deve retornar 400 caso título seja inválido", async () => {
+    const task = {
+      title: 123,
+    };
+    const response = await request(app).post("/api/tasks").send(task);
+    expect(response.status).toBe(400);
+  });
+
+  it("(POST /api/tasks) deve retornar 400 caso título tenha mais que 200 caracteres", async () => {
+    const task = {
+      title: "A".repeat(201),
+    };
+    const response = await request(app).post("/api/tasks").send(task);
+    expect(response.status).toBe(400);
+
+    const getResponse = await request(app).get("/api/tasks");
+    expect(getResponse.body).toHaveLength(0);
   });
 });
